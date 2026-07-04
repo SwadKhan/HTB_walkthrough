@@ -1,0 +1,19 @@
+---
+// Slim reading-progress bar at the top of a writeup. Vanilla JS,
+// no framework, no hydration cost.
+---
+<div class="reading-progress" aria-hidden="true"><div class="reading-progress-bar" id="rp-bar"></div></div>
+<script>
+  const bar = document.getElementById('rp-bar');
+  if (bar) {
+    const update = () => {
+      const scroll = window.scrollY;
+      const height = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = height > 0 ? Math.min(100, (scroll / height) * 100) : 0;
+      bar.style.width = pct + '%';
+    };
+    update();
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+  }
+</script>

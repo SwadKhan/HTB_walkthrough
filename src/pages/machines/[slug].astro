@@ -2,6 +2,10 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import InfoBox from '../../components/InfoBox.astro';
+import TagPills from '../../components/TagPills.astro';
+import BigProofCard from '../../components/BigProofCard.astro';
+import RelatedMachines from '../../components/RelatedMachines.astro';
+import ReadingProgress from '../../components/ReadingProgress.astro';
 
 export async function getStaticPaths() {
   const entries = await getCollection('machines', ({ data }) => !data.draft);
@@ -12,13 +16,42 @@ const { entry } = Astro.props;
 const { data } = entry;
 const isRetired = data.status === 'retired';
 const { Content } = await entry.render();
+
+// Rough reading-time estimate from the raw markdown body
+const bodyText = (entry.body ?? '').toString();
+const words = bodyText.trim().split(/\s+/).filter(Boolean).length;
+const readingTime = Math.max(1, Math.round(words / 220));
+
+const pageTitle = isRetired
+  ? `${data.title} — HTB Writeup`
+  : `${data.title} — HTB Machine Summary`;
 ---
-<BaseLayout title={`${data.title} — HTB Writeup`} description={data.summary}>
+<BaseLayout title={pageTitle} description={data.summary}>
+  <ReadingProgress />
   <article class="writeup">
     <div class="container">
       <a href="/" class="back-link">&larr; all machines</a>
-      <h1>{data.title}</h1>
-      <p style="color:var(--muted); max-width:640px;">{data.summary}</p>
+
+      <header class="machine-hero">
+        <div class="machine-hero-main">
+          <div class="crumbs mono">
+            <span>machines</span>
+            <span class="sep">/</span>
+            <span class="accent">{entry.slug}</span>
+            {isRetired
+              ? <span class="chip retired">RETIRED</span>
+              : <span class="chip locked">&#128274; ACTIVE</span>}
+          </div>
+          <h1>{data.title}</h1>
+          <p class="hero-sum">{data.summary}</p>
+          <div class="hero-meta mono">
+            {data.os && <span>{data.os}</span>}
+            {data.difficulty && <span class={`meta-diff ${data.difficulty.toLowerCase()}`}>&middot; {data.difficulty}</span>}
+            <span>&middot; ~{readingTime} min read</span>
+            {data.date && <span>&middot; {data.date.toLocaleDateString('en-GB', { year:'numeric', month:'short', day:'numeric' })}</span>}
+          </div>
+        </div>
+      </header>
 
       <InfoBox
         os={data.os}
@@ -31,6 +64,9 @@ const { Content } = await entry.render();
         techniques={data.techniques}
         cves={data.cves}
       />
+
+      {data.techniques.length > 0 && <TagPills items={data.techniques} title="Skills exercised" />}
+      {data.cves.length > 0 && <TagPills items={data.cves} title="CVEs referenced" />}
 
       {isRetired ? (
         <>
@@ -45,16 +81,31 @@ const { Content } = await entry.render();
           </div>
         </>
       ) : (
-        <div class="locked-notice">
-          <div class="lock">&#128274;</div>
-          <h3>Writeup locked</h3>
-          <p>
-            This machine may still be active. In line with Hack The Box's content policy, the full
-            writeup and proof are published only after the machine officially retires. I've owned it —
-            check back once it's retired.
-          </p>
-        </div>
+        <>
+          <div class="summary-banner mono">
+            <span class="tag">MACHINE SUMMARY</span>
+            <span>Owned user &amp; root &middot; writeup locked until retirement (HTB policy)</span>
+          </div>
+          <div class="prose prose-summary">
+            <Content />
+          </div>
+          {data.proof && (
+            <BigProofCard
+              machine={data.title}
+              proof={data.proof}
+              status={data.status}
+              pwnDate={data.date}
+            />
+          )}
+        </>
       )}
+
+      <RelatedMachines
+        currentSlug={entry.slug}
+        techniques={data.techniques}
+        os={data.os}
+        difficulty={data.difficulty}
+      />
     </div>
   </article>
 </BaseLayout>

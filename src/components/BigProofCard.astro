@@ -1,0 +1,27 @@
+---
+// Nimbus-style large proof card. Rendered at the bottom of an active
+// Machine Summary. The image is the HTB completion card the user
+// screenshotted; no flag data is shown by HTB on those cards.
+interface Props {
+  machine: string;
+  proof: string;
+  status: string;
+  pwnDate?: Date;
+}
+const { machine, proof, status, pwnDate } = Astro.props;
+const dateStr = pwnDate
+  ? pwnDate.toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' })
+  : null;
+const stateLabel = status === 'retired' ? 'RETIRED' : 'ACTIVE';
+---
+<figure class="big-proof">
+  <div class="big-proof-inner">
+    <img src={proof} alt={`Hack The Box proof of pwn for ${machine}. Shows the HTB share card confirming the machine was solved.`} loading="lazy" />
+  </div>
+  <figcaption>
+    <span class="mono">SMKhan</span> has successfully pwned
+    <span class="mono accent">{machine}</span> machine from Hack The Box &middot;
+    Status: <span class={`mono badge ${status === 'retired' ? 'retired' : 'locked'}`}>{stateLabel}</span>
+    {dateStr && <> &middot; <span class="mono">{dateStr}</span></>}
+  </figcaption>
+</figure>

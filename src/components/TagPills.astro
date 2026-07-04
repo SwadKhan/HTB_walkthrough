@@ -1,0 +1,36 @@
+---
+// Colour-coded technique / skill pills. The colour is picked by
+// matching the tag against a small keyword table — network stuff turns
+// blue, AD is amber, wireless is cyan, cloud is purple, etc. Falls
+// back to muted grey.
+interface Props {
+  items: string[];
+  title?: string;
+}
+const { items, title } = Astro.props;
+
+function colourClass(t: string): string {
+  const s = t.toLowerCase();
+  if (/ad|kerberos|domain|spn|ntds|winrm|ldap|hash/.test(s)) return 'p-ad';
+  if (/wireless|wifi|wpa|eap|snmp|deauth/.test(s)) return 'p-wifi';
+  if (/web|http|ssrf|xss|sqli|lfi|rce|deserial|jwt|csrf/.test(s)) return 'p-web';
+  if (/aws|s3|minio|azure|gcp|cloud|iam|sqs|ec2|codebuild/.test(s)) return 'p-cloud';
+  if (/crypto|cipher|pbkdf|bcrypt|hashcat|jwt|rsa|xor/.test(s)) return 'p-crypto';
+  if (/iot|firmware|embedded|busybox/.test(s)) return 'p-iot';
+  if (/stego|forensic|memory|volatility/.test(s)) return 'p-forensics';
+  if (/linux|privesc|sudo|suid|kernel|polkit|udisks|pam/.test(s)) return 'p-linux';
+  if (/container|docker|kubernetes|k8s|escape/.test(s)) return 'p-container';
+  if (/devops|ci|cd|jenkins|gitea|artifact/.test(s)) return 'p-devops';
+  return 'p-default';
+}
+---
+{items.length > 0 && (
+  <div class="pillbox">
+    {title && <div class="pillbox-title">{title}</div>}
+    <div class="pills">
+      {items.map((t) => (
+        <span class={`pill ${colourClass(t)}`}>{t}</span>
+      ))}
+    </div>
+  </div>
+)}

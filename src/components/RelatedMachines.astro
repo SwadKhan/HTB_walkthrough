@@ -1,0 +1,47 @@
+---
+import { getCollection } from 'astro:content';
+import MachineCard from './MachineCard.astro';
+
+interface Props {
+  currentSlug: string;
+  techniques: string[];
+  os?: string;
+  difficulty?: string;
+  limit?: number;
+}
+const { currentSlug, techniques, os, difficulty, limit = 3 } = Astro.props;
+
+const all = await getCollection('machines', ({ data }) => !data.draft);
+const scored = all
+  .filter((m) => m.slug !== currentSlug)
+  .map((m) => {
+    const overlap = techniques.filter((t) => m.data.techniques.includes(t)).length;
+    const osMatch = os && m.data.os === os ? 1 : 0;
+    const diffMatch = difficulty && m.data.difficulty === difficulty ? 0.5 : 0;
+    const retiredBonus = m.data.status === 'retired' ? 0.25 : 0;
+    return { m, score: overlap * 2 + osMatch + diffMatch + retiredBonus };
+  })
+  .sort((a, b) => b.score - a.score)
+  .slice(0, limit)
+  .map((x) => x.m);
+---
+{scored.length > 0 && (
+  <section class="related">
+    <h2 class="section-title">Related machines</h2>
+    <div class="grid">
+      {scored.map((m) => (
+        <MachineCard
+          slug={m.slug}
+          title={m.data.title}
+          summary={m.data.summary}
+          status={m.data.status}
+          os={m.data.os}
+          difficulty={m.data.difficulty}
+          ownedUser={m.data.ownedUser}
+          ownedRoot={m.data.ownedRoot}
+          cves={m.data.cves}
+        />
+      ))}
+    </div>
+  </section>
+)}
