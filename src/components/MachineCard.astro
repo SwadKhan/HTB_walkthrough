@@ -1,0 +1,32 @@
+---
+interface Props {
+  slug: string;
+  title: string;
+  summary: string;
+  status: string;
+  os?: string;
+  difficulty?: string;
+  ownedUser: boolean;
+  ownedRoot: boolean;
+  cves: string[];
+}
+const { slug, title, summary, status, os, difficulty, ownedUser, ownedRoot, cves } = Astro.props;
+const isRetired = status === 'retired';
+const owned = [ownedUser && 'User', ownedRoot && 'Root'].filter(Boolean).join('+');
+const diffClass = (difficulty || '').toLowerCase();
+---
+<a href={`/machines/${slug}`} class={`card ${isRetired ? '' : 'locked'}`}>
+  <div class="card-head">
+    <span class="card-title">{title}</span>
+    {isRetired
+      ? <span class="badge retired">RETIRED</span>
+      : <span class="badge locked">&#128274; locked</span>}
+  </div>
+  <p class="card-sum">{summary}</p>
+  <div class="card-foot">
+    {os && <span class="badge os">{os}</span>}
+    {difficulty && <span class={`badge ${diffClass}`}>{difficulty}</span>}
+    {owned && <span class="badge owned">{owned}</span>}
+    {isRetired && cves.length > 0 && <span class="badge cve">{cves[0]}</span>}
+  </div>
+</a>

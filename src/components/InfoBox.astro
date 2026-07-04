@@ -1,0 +1,39 @@
+---
+interface Props {
+  os?: string;
+  difficulty?: string;
+  points?: number;
+  status: string;
+  date?: Date;
+  ownedUser: boolean;
+  ownedRoot: boolean;
+  techniques: string[];
+  cves: string[];
+}
+const { os, difficulty, points, status, date, ownedUser, ownedRoot, techniques, cves } = Astro.props;
+const owned = [ownedUser && 'User', ownedRoot && 'Root'].filter(Boolean).join(' + ') || '—';
+const fmtDate = date
+  ? date.toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' })
+  : null;
+---
+<div class="infobox">
+  {os && <div class="row"><span class="k">OS</span><span class="v">{os}</span></div>}
+  {difficulty && <div class="row"><span class="k">Difficulty</span><span class="v">{difficulty}</span></div>}
+  {points != null && <div class="row"><span class="k">Points</span><span class="v">{points}</span></div>}
+  <div class="row"><span class="k">Owned</span><span class="v">{owned}</span></div>
+  <div class="row">
+    <span class="k">Status</span>
+    <span class="v">
+      {status === 'retired'
+        ? <span class="badge retired">RETIRED</span>
+        : <span class="badge locked">ACTIVE &middot; writeup locked</span>}
+    </span>
+  </div>
+  {fmtDate && <div class="row"><span class="k">Completed</span><span class="v">{fmtDate}</span></div>}
+  {techniques.length > 0 && (
+    <div class="row"><span class="k">Techniques</span><span class="v">{techniques.join(', ')}</span></div>
+  )}
+  {cves.length > 0 && (
+    <div class="row"><span class="k">CVEs</span><span class="v">{cves.join(', ')}</span></div>
+  )}
+</div>

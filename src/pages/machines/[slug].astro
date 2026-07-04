@@ -1,0 +1,60 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import InfoBox from '../../components/InfoBox.astro';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('machines', ({ data }) => !data.draft);
+  return entries.map((entry) => ({ params: { slug: entry.slug }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { data } = entry;
+const isRetired = data.status === 'retired';
+const { Content } = await entry.render();
+---
+<BaseLayout title={`${data.title} — HTB Writeup`} description={data.summary}>
+  <article class="writeup">
+    <div class="container">
+      <a href="/" class="back-link">&larr; all machines</a>
+      <h1>{data.title}</h1>
+      <p style="color:var(--muted); max-width:640px;">{data.summary}</p>
+
+      <InfoBox
+        os={data.os}
+        difficulty={data.difficulty}
+        points={data.points}
+        status={data.status}
+        date={data.date}
+        ownedUser={data.ownedUser}
+        ownedRoot={data.ownedRoot}
+        techniques={data.techniques}
+        cves={data.cves}
+      />
+
+      {isRetired ? (
+        <>
+          {data.proof && (
+            <figure class="proof-fig">
+              <img src={data.proof} alt={`Proof of pwn for ${data.title}`} loading="lazy" />
+              <figcaption>Proof of completion &middot; {data.title}</figcaption>
+            </figure>
+          )}
+          <div class="prose">
+            <Content />
+          </div>
+        </>
+      ) : (
+        <div class="locked-notice">
+          <div class="lock">&#128274;</div>
+          <h3>Writeup locked</h3>
+          <p>
+            This machine may still be active. In line with Hack The Box's content policy, the full
+            writeup and proof are published only after the machine officially retires. I've owned it —
+            check back once it's retired.
+          </p>
+        </div>
+      )}
+    </div>
+  </article>
+</BaseLayout>

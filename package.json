@@ -1,0 +1,16 @@
+{
+  "name": "htb-writeups",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "new": "node new-machine.mjs"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^3.1.9",
+    "astro": "^4.16.18"
+  }
+}

@@ -1,0 +1,87 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import MachineCard from '../components/MachineCard.astro';
+
+const all = await getCollection('machines', ({ data }) => !data.draft);
+
+const published = all
+  .filter((m) => m.data.status === 'retired')
+  .sort((a, b) => (b.data.date?.getTime() ?? 0) - (a.data.date?.getTime() ?? 0));
+
+const locked = all
+  .filter((m) => m.data.status !== 'retired')
+  .sort((a, b) => a.data.title.localeCompare(b.data.title));
+
+const totalOwned = all.length;
+const publishedCount = published.length;
+---
+<BaseLayout title="Swad Khan — HTB Machine Writeups">
+  <section class="hero">
+    <div class="container">
+      <h1><span class="accent">root@swad</span>: Hack The Box writeups</h1>
+      <p>
+        Retired-machine writeups and offensive-security notes. I break down the full
+        kill chain — recon, foothold, and privilege escalation — for machines that have
+        officially retired. Active machines are listed as owned; their writeups stay locked
+        until retirement.
+      </p>
+      <div class="stats">
+        <div class="stat"><b>{totalOwned}</b><span>Machines owned</span></div>
+        <div class="stat"><b>{publishedCount}</b><span>Writeups published</span></div>
+        <div class="stat"><b><a href="https://app.hackthebox.com/users/2602750" target="_blank" rel="noopener">HTB&#8599;</a></b><span>Profile</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">Published writeups (retired)</h2>
+      {publishedCount === 0 ? (
+        <p style="color:var(--muted)">
+          No writeups published yet. Mark a machine <code>status: retired</code> once it retires and
+          its writeup will appear here.
+        </p>
+      ) : (
+        <div class="grid">
+          {published.map((m) => (
+            <MachineCard
+              slug={m.slug}
+              title={m.data.title}
+              summary={m.data.summary}
+              status={m.data.status}
+              os={m.data.os}
+              difficulty={m.data.difficulty}
+              ownedUser={m.data.ownedUser}
+              ownedRoot={m.data.ownedRoot}
+              cves={m.data.cves}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  </section>
+
+  {locked.length > 0 && (
+    <section class="section">
+      <div class="container">
+        <h2 class="section-title">Also owned — writeup on retirement</h2>
+        <div class="grid">
+          {locked.map((m) => (
+            <MachineCard
+              slug={m.slug}
+              title={m.data.title}
+              summary={m.data.summary}
+              status={m.data.status}
+              os={m.data.os}
+              difficulty={m.data.difficulty}
+              ownedUser={m.data.ownedUser}
+              ownedRoot={m.data.ownedRoot}
+              cves={m.data.cves}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+</BaseLayout>
