@@ -24,9 +24,16 @@ const readingTime = Math.max(1, Math.round(words / 220));
 
 const pageTitle = isRetired
   ? `${data.title} — HTB Writeup`
-  : `${data.title} — HTB Machine Summary`;
+  : `${data.title} — HTB Machine (solved)`;
+
+// Active machines: HTB rules forbid sharing how an active machine was solved,
+// so nothing about the attack path (summary, techniques, CVEs, body) is rendered.
+const LOCKED_SUMMARY = 'Solved (user and root). Writeup will be published once HTB retires this machine.';
+const publicSummary = isRetired ? data.summary : LOCKED_SUMMARY;
+const publicTechniques = isRetired ? data.techniques : [];
+const publicCves = isRetired ? data.cves : [];
 ---
-<BaseLayout title={pageTitle} description={data.summary}>
+<BaseLayout title={pageTitle} description={publicSummary}>
   <ReadingProgress />
   <article class="writeup">
     <div class="container">
@@ -43,11 +50,11 @@ const pageTitle = isRetired
               : <span class="chip locked">&#128274; ACTIVE</span>}
           </div>
           <h1>{data.title}</h1>
-          <p class="hero-sum">{data.summary}</p>
+          <p class="hero-sum">{publicSummary}</p>
           <div class="hero-meta mono">
             {data.os && <span>{data.os}</span>}
             {data.difficulty && <span class={`meta-diff ${data.difficulty.toLowerCase()}`}>&middot; {data.difficulty}</span>}
-            <span>&middot; ~{readingTime} min read</span>
+            {isRetired && <span>&middot; ~{readingTime} min read</span>}
             {data.date && <span>&middot; {data.date.toLocaleDateString('en-GB', { year:'numeric', month:'short', day:'numeric' })}</span>}
           </div>
         </div>
@@ -61,12 +68,12 @@ const pageTitle = isRetired
         date={data.date}
         ownedUser={data.ownedUser}
         ownedRoot={data.ownedRoot}
-        techniques={data.techniques}
-        cves={data.cves}
+        techniques={publicTechniques}
+        cves={publicCves}
       />
 
-      {data.techniques.length > 0 && <TagPills items={data.techniques} title="Skills exercised" />}
-      {data.cves.length > 0 && <TagPills items={data.cves} title="CVEs referenced" />}
+      {publicTechniques.length > 0 && <TagPills items={publicTechniques} title="Skills exercised" />}
+      {publicCves.length > 0 && <TagPills items={publicCves} title="CVEs referenced" />}
 
       {isRetired ? (
         <>
@@ -86,9 +93,6 @@ const pageTitle = isRetired
             <span class="tag">MACHINE SUMMARY</span>
             <span>Owned user &amp; root &middot; writeup locked until retirement (HTB policy)</span>
           </div>
-          <div class="prose prose-summary">
-            <Content />
-          </div>
           {data.proof && (
             <BigProofCard
               machine={data.title}
@@ -102,7 +106,7 @@ const pageTitle = isRetired
 
       <RelatedMachines
         currentSlug={entry.slug}
-        techniques={data.techniques}
+        techniques={publicTechniques}
         os={data.os}
         difficulty={data.difficulty}
       />

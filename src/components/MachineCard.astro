@@ -22,7 +22,7 @@ const diffClass = (difficulty || '').toLowerCase();
       ? <span class="badge retired">RETIRED</span>
       : <span class="badge locked">&#128274; locked</span>}
   </div>
-  <p class="card-sum">{summary}</p>
+  <p class="card-sum">{isRetired ? summary : 'Solved. Writeup published after HTB retires this machine.'}</p>
   <div class="card-foot">
     {os && <span class="badge os">{os}</span>}
     {difficulty && <span class={`badge ${diffClass}`}>{difficulty}</span>}
